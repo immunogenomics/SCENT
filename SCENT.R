@@ -42,8 +42,9 @@ assoc_poisson = function(data, idx = seq_len(nrow(data))){
 input_atac <- commandArgs(trailingOnly = T)[1]
 input_mrna <- commandArgs(trailingOnly = T)[2]
 input_meta <- commandArgs(trailingOnly = T)[3]
-celltype <- commandArgs(trailingOnly = T)[4]
-output <- commandArgs(trailingOnly = T)[5]
+chunkinfo <- commandArgs(trailingOnly = T)[4]
+celltype <- commandArgs(trailingOnly = T)[5]
+output <- commandArgs(trailingOnly = T)[6]
 
 options(stringsAsFactors = F)
 
@@ -52,7 +53,7 @@ mrna <- readRDS(input_mrna)
 meta <- readRDS(input_meta)
 
 chunkinfo <- readRDS(peak_gene)
-colnames(chunkinfo)<-c("peak","gene")
+colnames(chunkinfo)<-c("gene","peak")
 
 res<-data.frame()
 for(n in c(1:nrow(chunkinfo))){
@@ -68,13 +69,17 @@ for(n in c(1:nrow(chunkinfo))){
     df2 <- df[df$celltype==celltype,]
     nonzero_m  <- length( df2$exprs[ df2$exprs > 0] ) / length( df2$exprs )
     nonzero_a  <- length( df2$atac[ df2$atac > 0] ) / length( df2$atac )
-    if(nonzero_m > 0.05& nonzero_a > 0.05){
+    if(nonzero_m > 0.05 & nonzero_a > 0.05){
       # poisson
       base = glm(exprs ~ atac + percent_mito + log(nUMI) + sample + batch, family = 'poisson', data = df2)
       coefs<-summary(base)$coefficients["atac",]
-      bs = boot::boot(df2,assoc_poisson, R = 500, stype = 'i')
+      bs = boot::boot(df2,assoc_poisson, R = 100, stype = 'i')
       p0 = basic_p(bs$t0[1], bs$t[,1])
       if(p0<0.1){
+        bs = boot::boot(df2,assoc_poisson, R = 500, stype = 'i')
+        p0 = basic_p(bs$t0[1], bs$t[,1])
+      }
+      if(p0<0.05){
         bs = boot::boot(df2,assoc_poisson, R = 2500, stype = 'i')
         p0 = basic_p(bs$t0[1], bs$t[,1])
       }
