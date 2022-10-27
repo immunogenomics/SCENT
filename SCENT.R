@@ -42,7 +42,7 @@ assoc_poisson = function(data, idx = seq_len(nrow(data))){
 input_atac <- commandArgs(trailingOnly = T)[1]
 input_mrna <- commandArgs(trailingOnly = T)[2]
 input_meta <- commandArgs(trailingOnly = T)[3]
-chunkinfo <- commandArgs(trailingOnly = T)[4]
+gene_peak <- commandArgs(trailingOnly = T)[4]
 celltype <- commandArgs(trailingOnly = T)[5]
 output <- commandArgs(trailingOnly = T)[6]
 
@@ -52,7 +52,7 @@ atac <- readRDS(input_atac)
 mrna <- readRDS(input_mrna)
 meta <- readRDS(input_meta)
 
-chunkinfo <- readRDS(peak_gene)
+chunkinfo <- readRDS(gene_peak)
 colnames(chunkinfo)<-c("gene","peak")
 
 res<-data.frame()
