@@ -32,7 +32,7 @@ basic_p = function(obs, boot, null = 0){
 
 
 assoc_poisson = function(data, idx = seq_len(nrow(data))){
-  gg = glm(exprs ~ atac + percent_mito + log(nUMI) + sample, family = 'poisson', data = data[idx,,drop = FALSE])
+  gg = glm(exprs ~ atac + percent_mito + log(nUMI) + sample + batch, family = 'poisson', data = data[idx,,drop = FALSE])
   c(coef(gg)['atac'], diag(vcov(gg))['atac'])
 }
 
