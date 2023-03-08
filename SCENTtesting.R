@@ -9,7 +9,7 @@ library(methods) #S4 class OOP methods.
 
 
 #Get functions and classes:
-source("SCENTfunctions_update.R")
+source("SCENTfunctions.R")
 
 input_atac <- "./RData/Data/pbmc_multimodal.atac.rds"
 input_mrna <- "./RData/Data/pbmc_multimodal.rna.rds"
