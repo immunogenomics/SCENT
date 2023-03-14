@@ -12,17 +12,17 @@ Description: SCENT uses single-cell multimodal data (e.g., 10X Multiome RNA/ATAC
     bootstrapping framework to control for type I error.
     R package.
 Depends:
-  methods
-  Hmisc
-  R.utils
+    methods
+    Hmisc
+    R.utils
 Imports:
-  data.table
-  lme4
-  stringr
-  boot
-  MASS
-  Matrix
-  parallel
+    data.table
+    lme4
+    stringr
+    boot
+    MASS
+    Matrix
+    parallel
 Suggests:
     arq5x/bedtools2,
     knitr,
