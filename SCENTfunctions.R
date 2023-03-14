@@ -74,21 +74,24 @@ check_dimensions <- function(object){
                    " and number of genes =",num_genes))
   }
   
-  
-  #Check if genes correspond between rna matrix and peak.info dataframe:
-  if(!all(object@peak.info[[1]] %in% object@rna@Dimnames[[1]])){
-    msg <- paste("The gene names in the peak.info dataframe is NOT a subset of the gene names in",
-                 " the scRNA matrix")
-    errors <- c(errors, msg)
+  #If peak.info is present check the following:
+  if(!(length(object@peak.info) == 0)){
+    #Check if genes correspond between rna matrix and peak.info dataframe:
+    if(!all(object@peak.info[[1]] %in% object@rna@Dimnames[[1]])){
+      msg <- paste("The gene names in the peak.info dataframe is NOT a subset of the gene names in",
+                   " the scRNA matrix")
+      errors <- c(errors, msg)
+    }
+    
+    
+    #Check if peaks correspond between atac matrix and peak.info dataframe:
+    if(!all(object@peak.info[[2]] %in% object@atac@Dimnames[[1]])){
+      msg <- paste("The peak ids in the peak.info dataframe is NOT a subset of the peak names in",
+                   " the scATAC matrix")
+      errors <- c(errors, msg)
+    }
   }
   
-  
-  #Check if peaks correspond between atac matrix and peak.info dataframe:
-  if(!all(object@peak.info[[2]] %in% object@atac@Dimnames[[1]])){
-    msg <- paste("The peak ids in the peak.info dataframe is NOT a subset of the peak names in",
-                 " the scATAC matrix")
-    errors <- c(errors, msg)
-  }
   
   ###Additional things to check:
   #Check if meta.data table with covariates has the correct cell column names
@@ -115,7 +118,7 @@ CreateSCENTObj <- setClass(
     rna = 'dgCMatrix',  #'data.frame'
     atac = 'dgCMatrix', #'data.frame'. #"ANY"
     meta.data = 'data.frame',
-    peak.info = 'data.frame',  ###Must be gene (1st column) then peak (2nd column) 
+    peak.info = 'ANY',  ###Must be gene (1st column) then peak (2nd column): trying list or dataframe...
     covariates = 'character',  #Assign columns of covariates, Assign the celltype column.
     celltypes = 'character',
     SCENT.result = 'data.frame'
@@ -187,3 +190,35 @@ SCENT_algorithm <- function(object, celltype, ncores){
   object@SCENT.result <- res
   return(object)
 }
+
+
+#genebed="/path/to/GeneBody_500kb_margin.bed",nbatch,tmpfile="./temporary_atac_peak.bed",intersectedfile="./temporary_atac_peak_intersected.bed.gz"
+CreatePeakToGeneList <- function(object,genebed="/path/to/GeneBody_500kb_margin.bed",nbatch,tmpfile="./temporary_atac_peak.bed",intersectedfile="./temporary_atac_peak_intersected.bed.gz"){
+  peaknames <- rownames(object@atac) # peak by cell matrix
+  peaknames_r <- gsub(":","-",peaknames) # in case separator included ":"
+  peaknames_r <- gsub("_","-",peaknames_r) # in case separator included "_"
+  peak_bed <- data.frame(chr = str_split_fixed(peaknames_r,"-",3)[,1], start = str_split_fixed(peaknames_r,"-",3)[,2], end = str_split_fixed(peaknames_r,"-",3)[,3], peak=peaknames)
+  write.table(peak_bed,tmpfile,quote=F,row=F,col=F,sep="\t")
+  system(paste("bedtools intersect -a",genebed,"-b ",tmpfile, " -wa -wb -loj | gzip -c >", intersectedfile))
+  system(paste("rm ", tmpfile))
+  d <- fread(intersectedfile,sep="\t")
+  d<-data.frame(d)
+  d <- d[d$V5 != ".",]
+
+  #Obtain gene to peak pairs.
+  cis.g2p <- d[c("V4","V8")]
+  colnames(cis.g2p) <- c("gene","peak")
+  
+  cis.g2p$index <- 1:nrow(cis.g2p)
+  cis.g2p$batch_index <- cut2(cis.g2p$index, g = nbatch, levels.mean = TRUE)
+  cis.g2p_list <- split(cis.g2p, f = cis.g2p$batch_index)
+  cis.g2p_list <- lapply(cis.g2p_list, function(x) x[(names(x) %in% c("peak", "gene"))])
+  names(cis.g2p_list) <- 1:length(cis.g2p_list)
+  # Update the SCENT.peak.info field of the constructor in R:
+  object@peak.info <- cis.g2p_list
+  return(object)
+}
+
+
+
+

@@ -29,6 +29,39 @@ meta <- readRDS(input_meta)
 gene_peak <- read.table(input_gene_peak)
 
 
+#####1st way######
+library(data.table)
+library(Matrix)
+library(stringr)
+library(Hmisc)
+library(R.utils)
+# bedtools should also be in the path to run this
+
+####Using the SCENT Object:
+SCENT_obj <- CreateSCENTObj(rna = mrna, atac = atac, meta.data = meta,
+                            covariates = c("log(nCount_RNA)","percent.mito"), 
+                            celltypes = "newCT")
+str(SCENT_obj)
+
+
+genebed_loc <- "./RData/Data/GeneBody_500kb_margin_chr.bed" # path to the file which we will place in the github
+
+SCENT_obj <- CreatePeakToGeneList(SCENT_obj, genebed = genebed_loc,
+                                  nbatch = 1000,tmpfile="./temporary_atac_peak.bed",
+                                  intersectedfile="./temporary_atac_peak_intersected.bed.gz")
+str(SCENT_obj, max.level = 2)
+
+saveRDS(SCENT_obj, file = "./Testing/Output/SCENT_obj.rds") #Takes a couple minutes.
+
+
+####Main Q.):
+#How to deal with differences in types for peak.info.
+SCENT_obj2 <- SCENT_obj
+SCENT_obj2@peak.info <- SCENT_obj2@peak.info[["1001544.0"]]
+
+
+
+#####2nd way#######
 ####Using the SCENT Object:
 SCENT_obj <- CreateSCENTObj(rna = mrna, atac = atac, meta.data = meta,
                             peak.info = gene_peak,
