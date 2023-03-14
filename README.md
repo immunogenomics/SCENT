@@ -26,13 +26,12 @@ We use Poisson regression to associate gene expression (raw) count and (binarize
 
 ### Installation
 
-In order to get started with `SCENT`, you can clone this repository.
+You can install the development version of SCENT from [GitHub](https://github.com/) with:
 
-```{bash}
-$ git clone https://github.com/immunogenomics/SCENT
-$ cd ./SCENT
+``` r
+# install.packages("devtools")
+devtools::install_github("immunogenomics/SCENT")
 ```
-
 
 
 ### Requirements
