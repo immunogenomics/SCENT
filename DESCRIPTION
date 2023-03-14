@@ -24,8 +24,7 @@ Imports:
     Matrix
     parallel
 Suggests:
-    arq5x/bedtools2,
-    knitr,
+    knitr
     rmarkdown
 License: MIT + file LICENSE
 Encoding: UTF-8
