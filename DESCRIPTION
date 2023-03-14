@@ -11,21 +11,6 @@ Description: SCENT uses single-cell multimodal data (e.g., 10X Multiome RNA/ATAC
     (binarized) peak accessibility, and estimate errors in coefficients by 
     bootstrapping framework to control for type I error.
     R package.
-Depends:
-    methods
-    Hmisc
-    R.utils
-Imports:
-    data.table
-    lme4
-    stringr
-    boot
-    MASS
-    Matrix
-    parallel
-Suggests:
-    knitr
-    rmarkdown
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
