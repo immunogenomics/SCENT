@@ -3,6 +3,7 @@
 #'
 #' @param q bootstrap quantiles, centered so that under the null, theta = 0
 #' @return two-sided p-value
+#' @export
 interp_pval = function(q) {
   R = length(q)
   tstar = sort(q)
@@ -19,6 +20,7 @@ interp_pval = function(q) {
 #' @param boot vector of bootstraps
 #'
 #' @return p-value
+#' @export
 basic_p = function(obs, boot, null = 0){
   interp_pval(2*obs - boot - null)
 }
@@ -31,6 +33,7 @@ basic_p = function(obs, boot, null = 0){
 #' @param formula user defined formula based on initialization in CreateSCENTObj Constructor
 #'
 #' @return vector: (coefficient of the peak effect on gene, variance of peak effect on gene)
+#' @export
 assoc_poisson = function(data, idx = seq_len(nrow(data)), formula){
   gg = glm(formula, family = 'poisson', data = data[idx,,drop = FALSE])
   c(coef(gg)['atac'], diag(vcov(gg))['atac'])
@@ -45,7 +48,7 @@ assoc_poisson = function(data, idx = seq_len(nrow(data)), formula){
 #' @return None OR Errors dependent on if the object follows the guidelines for SCENT
 #' RNA: matrix of (genes x cells)
 #' ATAC: matrix of (peaks x cells)
-#'
+#' @export
 check_dimensions <- function(object){
   errors <- character()
 
@@ -112,11 +115,12 @@ check_dimensions <- function(object){
 #' @slot SCENT.result data.frame. Initialized as empty. Becomes a table of resultant significant gene peak pairs
 #'
 #' @return SCENT object to use for further analysis
+#' @export
 CreateSCENTObj <- setClass(
   Class = "SCENT",
   slots = c(
-    rna = 'dgCMatrix',  #'data.frame'
-    atac = 'dgCMatrix', #'data.frame'. #"ANY"
+    rna = 'dgCMatrix',
+    atac = 'dgCMatrix',
     meta.data = 'data.frame',
     peak.info = 'ANY',  ###Must be gene (1st column) then peak (2nd column): trying list or dataframe...
     covariates = 'character',  #Assign columns of covariates, Assign the celltype column.
@@ -134,6 +138,7 @@ CreateSCENTObj <- setClass(
 #' @param ncores Number of cores to use for Parallelization
 #'
 #' @return SCENT object with updated field SCENT.results
+#' @export
 SCENT_algorithm <- function(object, celltype, ncores){
   res <- data.frame()
   for (n in 1:nrow(object@peak.info)){ ####c(1:nrow(chunkinfo))
@@ -202,6 +207,7 @@ SCENT_algorithm <- function(object, celltype, ncores){
 #' @param intersectedfile Location of intersected file.
 #'
 #' @return SCENT object with updated field of peak.info
+#' @export
 CreatePeakToGeneList <- function(object,genebed="/path/to/GeneBody_500kb_margin.bed",nbatch,tmpfile="./temporary_atac_peak.bed",intersectedfile="./temporary_atac_peak_intersected.bed.gz"){
   peaknames <- rownames(object@atac) # peak by cell matrix
   peaknames_r <- gsub(":","-",peaknames) # in case separator included ":"

@@ -28,7 +28,7 @@ input_atac <- "./RData/Data/pbmc_multimodal.atac.rds"
 input_mrna <- "./RData/Data/pbmc_multimodal.rna.rds"
 input_meta <- "./RData/Data/pbmc_multimodal.meta.rds"
 input_gene_peak <- "./RData/Data/qced_Tnk.G2P.txt"
-output_rds <- "./Testing/Output/SCENT_obj.rds"
+output_rds <- "./Output/SCENT_obj.rds"
 ####Obtaining Gene-Peak Pairs using defined bed file
 genebed_loc <- "./RData/Data/GeneBody_500kb_margin_chr.bed" 
 
