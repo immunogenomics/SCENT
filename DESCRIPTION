@@ -15,7 +15,9 @@ Imports:
     methods, Hmisc, R.utils, data.table, lme4, stringr,
     boot, MASS, Matrix, parallel
 Suggests:
-    knitr, rmarkdown, arq5x/bedtools2 
+    knitr, rmarkdown
+SystemRequirements:
+    bedtools (https://github.com/arq5x/bedtools2)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
