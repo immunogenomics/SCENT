@@ -1,0 +1,3 @@
+devtools::document()
+devtools::check()
+#https://r-pkgs.org/vignettes.html

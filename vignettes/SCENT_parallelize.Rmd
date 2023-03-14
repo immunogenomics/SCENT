@@ -22,7 +22,7 @@ library(SCENT)
 
 ## Data Inputs
 
-```{r}
+```{r inputs}
 #Initialize directories: (Example)
 input_atac <- "./RData/Data/pbmc_multimodal.atac.rds"
 input_mrna <- "./RData/Data/pbmc_multimodal.rna.rds"
@@ -57,7 +57,7 @@ str(SCENT_obj)
 
 ## Make Gene-Peak Pair Lists
 
-```{r}
+```{r gene_peak_list}
 SCENT_obj <- CreatePeakToGeneList(SCENT_obj, genebed = genebed_loc,
                                   nbatch = 1000,tmpfile="./temporary_atac_peak.bed",
                                   intersectedfile="./temporary_atac_peak_intersected.bed.gz")
@@ -66,7 +66,7 @@ str(SCENT_obj, max.level = 2)
 
 ##Save the SCENT obj for parallelized jobs on the cluster to get SCENT results.
 
-```{r}
+```{r SCENT_obj_save}
 saveRDS(SCENT_obj, file = output_rds) #Takes a couple minutes.
 ```
 
