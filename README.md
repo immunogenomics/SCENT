@@ -179,10 +179,10 @@ Arguments in the bash file are user specified as follows:
 
 |#      | Argument Name | Descriptions |
 | ----  | ------------- | ------------ |
-|1    | LSB_JOBINDEX   | jobarray index specified by BSUB -J |
+|1    | LSB_JOBINDEX   | jobarray index specified by BSUB -J SCENT[1-100] |
 |2    | num_cores      | number of cores (ex. 6) to parallelize to the SCENT algorithm |
 |3    | file_SCENT_obj | SCENT object that contains atac_matrix, rna_matrix, metafile, peak_gene_list, etc. To run the SCENT algorithm |
-|4    | celltype       |  User specified celltype (ex. "Tcells") to run the SCENT algorithm |
+|4    | celltype       |User specified celltype (ex. "Tcells") to run the SCENT algorithm |
 |5    | output_dir     | User specified directory to output the SCENT results to aggregate once parallization is completed.
 |
 
