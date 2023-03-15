@@ -1,0 +1,26 @@
+{
+    "id": "B5E432F3",
+    "path": "~/Documents/GitHub/SCENT/Parallelized Bash Script/SCENT_parallelization.R",
+    "project_path": "Parallelized Bash Script/SCENT_parallelization.R",
+    "type": "r_source",
+    "hash": "1546428923",
+    "contents": "",
+    "dirty": false,
+    "created": 1678837355382.0,
+    "source_on_save": false,
+    "relative_order": 9,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "12,5",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1678829710,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1678829710,
+    "read_only": false,
+    "read_only_alternatives": []
+}

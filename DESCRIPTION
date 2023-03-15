@@ -1,0 +1,31 @@
+Package: SCENT
+Type: Package
+Title: Single-Cell ENhancer Target (SCENT) gene mapping for single cell multimodal data 
+Version: 0.1.0
+Author: Saori Sakaue and Shakson Isaac
+Maintainer: Shakson Isaac <shakson_isaac@g.harvard.edu>
+Description: R package that contains functions for the SCENT algorithm. SCENT uses 
+    single-cell multimodal data (e.g., 10X Multiome RNA/ATAC) and links 
+    ATAC-seq peaks (putative enhancers) to their target genes by modeling association
+    between chromatin accessibility and gene expression across individual single cells.
+Imports:
+    methods, 
+    Hmisc, 
+    R.utils, 
+    data.table, 
+    lme4, 
+    stringr,
+    boot, 
+    MASS, 
+    Matrix, 
+    parallel
+Suggests:
+    knitr, 
+    rmarkdown
+SystemRequirements:
+    bedtools (https://github.com/arq5x/bedtools2)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.2.3
+VignetteBuilder: knitr

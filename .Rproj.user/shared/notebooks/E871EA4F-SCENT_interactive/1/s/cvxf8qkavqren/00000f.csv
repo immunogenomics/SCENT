@@ -1,0 +1,4 @@
+"0","#Of the set of peak gene pairs: pick a set of pairs to test: "
+"0","#Example: (first 10 gene-peak pairs)"
+"0","SCENT_obj@peak.info <- SCENT_obj@peak.info[1:10,]"
+"0","head(SCENT_obj@peak.info)"
