@@ -72,7 +72,7 @@ Followed by SCENT algorithm:
 ```r
 SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcells", ncores = 6)
 ```
-Where the user specifies the celltype for association analysis and the number of cores for parallelization of bootstrapping.
+Where the user specifies the celltype for association analysis and the number of cores for parallelized bootstrapping.
 
 The output of the SCENt algorithm will be contained in the field:
 ```r
@@ -87,10 +87,10 @@ Further information on Inputs and Outputs of SCENT are detailed below:
 
 | #    | Argument name (format)       | Descriptions                                                 |
 | ---- | ---------------------------- | ------------------------------------------------------------ |
-| 1    | rna (.rds)            | A gene-by-cell matrix from multimodal RNA-seq data. This is a raw count matrix without any normalization. The column names should be the gene names used in the `file_gene_peak_tested` file. This can be sparse matrix format. |
-| 2    | atac (.rds)           | A peak-by-cell matrix from multimodal ATAC-seq data. The row names should be the peak names used in the `file_gene_peak_tested` file. The column names are the cell names which should be the same names used in `rna_matrix` and the `cell`column of `metafile`. The matrix may not be binarized while it will be binarized within the function. This can be sparse matrix format. |
-| 3    | meta.data (.txt)              | A metadata for cells (rows are cells, and cell names should be in the column named as "cell"; see below example). Additionally, this text should include covariates to use in the model. Examples include: % mitochondrial reads, nUMI, sample, and batch as covariates. |
-| 4    | peak.info (.txt) | A textfile indicating which gene-peak pairs you want to test in this chunk (see below example). We highly recommend splitting gene-peak pairs into many chunks to increase computational efficiency. |
+| 1    | rna (.rds)            | A gene-by-cell matrix from multimodal RNA-seq data. This is a raw count matrix without any normalization. The column names should be the gene names used in the `file_gene_peak_tested` file. Sparse matrix format is required. |
+| 2    | atac (.rds)           | A peak-by-cell matrix from multimodal ATAC-seq data. The row names should be the peak names used in the `file_gene_peak_tested` file. The column names are the cell names which should be the same names used in `rna_matrix` and the `cell`column of `metafile`. The matrix may not be binarized while it will be binarized within the function. Sparse matrix format is required. |
+| 3    | meta.data (.txt)              | A metadata for cells (rows are cells, and cell names should be in the column named as "cell"; see below example). Additionally, this text should include covariates to use in the model. Examples include: % mitochondrial reads, nUMI, sample, and batch as covariates. Dataframe format is required. |
+| 4    | peak.info (.txt) | A textfile indicating which gene-peak pairs you want to test in this chunk (see below example). We highly recommend splitting gene-peak pairs into many chunks to increase computational efficiency (See Parallelized Jobs Info in Section 2). Dataframe or List(Dataframe) format is required. |
 | 5    | covariates (character)        | A vector of character fields that denote the covariates listed in the meta.data. For example, a set of covariates can be: %mitochondrial reads, nUMI, sample, and batch. Additionally the user can specify transformations to the covariates such as log transformation on nUMI counts for direct usage in the SCENT algorithm invoking poisson glm. |
 | 6    | cell_type (character)        | A name of the cell type you want to test in this association analysis. This should be corresponding to the `celltype` column of the `metafile`. |
 
@@ -135,7 +135,7 @@ AAACAGCCAGGATAAC-1    Tcell
 ```
 
 
-### Output of SCENT (SCENT.result field)
+#### Output of SCENT (SCENT.result field)
 
 ```bash
 $ head ${file_output}
@@ -164,7 +164,7 @@ Each column indicates ...
 
 
 `SCENT_parallelization.R` is the code necessary for running parallelized SCENT jobs.
-This code needs a `SCENT Object rds` file that contains a list of gene-peak pairs. 
+This code needs a `SCENT_Object.rds` file that contains a list of gene-peak pairs. 
 To generate this object please follow the SCENT_parallelize.Rmd vignette file.
 
 The corresponding bash script `parallelizedSCENT.sh` contains a parallelization scheme that is 
