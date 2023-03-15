@@ -183,8 +183,7 @@ Arguments in the bash file are user specified as follows:
 |2    | num_cores      | number of cores (ex. 6) to parallelize to the SCENT algorithm |
 |3    | file_SCENT_obj | SCENT object that contains atac_matrix, rna_matrix, metafile, peak_gene_list, etc. To run the SCENT algorithm |
 |4    | celltype       |User specified celltype (ex. "Tcells") to run the SCENT algorithm |
-|5    | output_dir     | User specified directory to output the SCENT results to aggregate once parallization is completed.
-|
+|5    | output_dir     | User specified directory to output the SCENT results to aggregate once completed. |
 
 
 ### Contact
