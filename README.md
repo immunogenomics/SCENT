@@ -64,7 +64,7 @@ In summary, the main functionality is the SCENT object construction:
 ```r
 SCENT_obj <- CreateSCENTObj(rna = mrna, atac = atac, meta.data = meta,
                             peak.info = gene_peak,
-                            covariates = c("log(nCount_RNA)","percent.mito"), 
+                            covariates = c("log(nUMI)","percent.mito","sample", "batch"), 
                             celltypes = "newCT")
 ```
 
@@ -72,9 +72,9 @@ Followed by SCENT algorithm:
 ```r
 SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcells", ncores = 6)
 ```
-Where the user specifies the celltype for association analysis and the number of cores for parallelized bootstrapping.
+Where the user specifies a celltype for association analysis and the number of cores for parallelized bootstrapping.
 
-The output of the SCENt algorithm will be contained in the field:
+The output of the SCENT algorithm will be contained in the field:
 ```r
 SCENT_obj@SCENT.result
 ```
@@ -92,7 +92,7 @@ Further information on Inputs and Outputs of SCENT are detailed below:
 | 3    | meta.data (.txt)              | A metadata for cells (rows are cells, and cell names should be in the column named as "cell"; see below example). Additionally, this text should include covariates to use in the model. Examples include: % mitochondrial reads, nUMI, sample, and batch as covariates. Dataframe format is required. |
 | 4    | peak.info (.txt) | A textfile indicating which gene-peak pairs you want to test in this chunk (see below example). We highly recommend splitting gene-peak pairs into many chunks to increase computational efficiency (See Parallelized Jobs Info in Section 2). Dataframe or List(Dataframe) format is required. |
 | 5    | covariates (character)        | A vector of character fields that denote the covariates listed in the meta.data. For example, a set of covariates can be: %mitochondrial reads, nUMI, sample, and batch. Additionally the user can specify transformations to the covariates such as log transformation on nUMI counts for direct usage in the SCENT algorithm invoking poisson glm. |
-| 6    | cell_type (character)        | A name of the cell type you want to test in this association analysis. This should be corresponding to the `celltype` column of the `metafile`. |
+| 6    | cell_types (character)        | User specified naming of the celltype column in the meta.data file. This column should contain the names of the celltypes you want to test in this association analysis. |
 
 Alternatives: The peak.info field can be left blank and created using the CreatePeakToGeneList function in the SCENT package. This function requires the user to specify a bed file that specifies ~500 kb windows of multiple gene loci to identify cis gene-peak pairs to test.
 
