@@ -1,3 +1,0 @@
-"0","#Run SCENT algorithm of Tnk cell type and use 6 cores for parallelization:"
-"0","SCENT_obj <- SCENT_algorithm(SCENT_obj, ""Tnk"", 6)"
-"0","head(SCENT_obj@SCENT.result)"
