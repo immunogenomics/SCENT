@@ -19,6 +19,7 @@ SCENT uses single-cell multimodal data (e.g., 10X Multiome RNA/ATAC) and links A
 </div>
 
 
+
 We use Poisson regression to associate gene expression (raw) count and (binarized) peak accessibility, and estimate errors in coefficients by bootstrapping framework to control for type I error.
 
 
@@ -93,7 +94,7 @@ Further information on Inputs and Outputs of SCENT are detailed below:
 | 2    | atac (sparse matrix) | A peak-by-cell count matrix from multimodal ATAC-seq data. This is a raw count matrix without any normalization. It can either be binarized or non-binarized (when non-binarized, it can be automatically converted to ). The row names should be the peak names used in the `peak.info` file. The column names are the cell names which should be the same names used in `rna` and the `cell`column of `metafile`. The matrix may not be binarized while it will be binarized within the function. Sparse matrix format is required. |
 | 3    | meta.data (dataframe)     | A meta data frame for cells (rows are cells, and cell names should be in the column named as "cell"; see below example). Additionally, this text should include covariates to use in the model. Examples include: % mitochondrial reads, log(nUMI), sample, and batch as covariates. Dataframe format is required. |
 | 4    | peak.info (dataframe) | A textfile indicating which gene-peak pairs you want to test in this chunk (see below example). We highly recommend splitting gene-peak pairs into many chunks to increase computational efficiency (See Parallelized Jobs Info in Section 2). Dataframe format or List(Dataframe) format which is a list of multiple data frames for parallelization is required. |
-| 5    | covariates (character)        | A vector of character fields that denote the covariates listed in the meta.data. For example, a set of covariates can be: %mitochondrial reads, nUMI, sample, and batch. Additionally the user can specify transformations to the covariates such as log transformation on nUMI counts for direct usage in the SCENT algorithm invoking poisson glm. |
+| 5    | covariates (a vector of character) | A vector of character fields that denote the covariates listed in the meta.data. For example, a set of covariates can be: %mitochondrial reads, log_nUMI, sample, and batch. Additionally the user can specify transformations to the covariates such as log transformation on nUMI counts for direct usage in the SCENT algorithm invoking poisson glm. **We recommend users to at least use log(number of UMI of the total RNA count per cell) as the base model is Poisson regression and we do not include the offset term into the default model.** |
 | 6    | celltypes (character)        | User specified naming of the celltype column in the meta.data file. This column should contain the names of the celltypes you want to test in this association analysis. |
 
 Alternatives: The peak.info field can be left blank and created using the CreatePeakToGeneList function in the SCENT package. This function requires the user to specify a bed file that specifies ~500 kb windows of multiple gene loci to identify cis gene-peak pairs to test.
@@ -101,20 +102,23 @@ Alternatives: The peak.info field can be left blank and created using the Create
 
 
 #### Example Formats: 
-The example format of  `file_gene_peak_tested` file in text format.
+The example format of  `peak.info` argument:
 
 ```bash
-$ head ${file_gene_peak_tested} 
-A1BG	chr19-57849279-57850722
-A1BG	chr19-57888160-57889279
-A1BG	chr19-57915851-57917093
-A1BG	chr19-57934422-57935603	
+> head(gene_peak)
+
+    V1                      V2
+1 A1BG chr19-57849279-57850722
+2 A1BG chr19-57888160-57889279
+3 A1BG chr19-57915851-57917093
+4 A1BG chr19-57934422-57935603
+5 A1BG chr19-57946848-57948062
 ```
 
-We usually only select peaks of which the center falls within 500 kb from the target gene (*cis* analysis). Also, while we have a function to QC peaks and genes so that they are present in at least 5% of all cells within `SCENT.R`, it is more efficient to only include these QCed peaks and genes in  `file_gene_peak_tested`  to reduce the number of tests.
+We usually only select peaks of which the center falls within 500 kb from the target gene (*cis* analysis). Also, while we have a function to QC peaks and genes so that they are present in at least 5% of all cells within `SCENT.R`, **it is more efficient to only include these QCed peaks and genes in  `peak.info`  to reduce the number of tests**.
 
 
-The example format of  `metafile` file in rds format.
+The example format of  `meta.data` argument:
 
 ```r
 meta <- readRDS(metafile)
@@ -140,7 +144,7 @@ AAACAGCCAGGATAAC-1    Tcell
 #### Output of SCENT (SCENT.result field)
 
 ```bash
-$ head ${file_output}
+> head(SCENT_obj@SCENT.result)
 gene	peak	beta	se	z	p	boot_basic_p
 A1BG	chr19-57849279-57850722	0.587060911718621	0.227961010352348	2.57526894977009	0.0100162168431262	0.0192
 A1BG	chr19-57888160-57889279	-0.0842330294127105	0.232845263030106	-0.3617553920425660.717534829528597	0.688
@@ -165,7 +169,7 @@ Each column indicates ...
 ### 2.) Using SCENT with parallelized jobs.
 
 
-`SCENT_parallelization.R` is the code necessary for running parallelized SCENT jobs.
+`SCENT_parallelization.R` is the example code necessary for running parallelized SCENT jobs.
 This code needs a `SCENT_Object.rds` file that contains a list of gene-peak pairs. 
 To generate this object please follow the SCENT_parallelize.Rmd vignette file.
 
