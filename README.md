@@ -68,14 +68,14 @@ library(SCENT)
 SCENT_obj <- CreateSCENTObj(rna = mrna, atac = atac, meta.data = meta,
                             peak.info = gene_peak,
                             covariates = c("log(nUMI)","percent.mito","sample", "batch"), 
-                            celltypes = "newCT")
+                            celltypes = "celltype")
 ```
 
 Followed by SCENT algorithm:
 ```r
-SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcells", ncores = 6)
+SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcell", ncores = 6)
 ```
-Where the user specifies a celltype for association analysis and the number of cores for parallelized bootstrapping.
+Where the user specifies a `celltype` (in this case "Tcell") for association analysis (in `meta.data` slot in SCENT object) and the number of cores for parallelized bootstrapping.
 
 The output of the SCENT algorithm will be contained in the field:
 ```r
@@ -86,15 +86,15 @@ which can be saved as a textfile for further downstream analysis.
 
 Further information on Inputs and Outputs of SCENT are detailed below:
 
-#### Inputs To SCENT Object:
+#### Arguments To `CreateSCENTObj`:
 
 | #    | Argument name (format)       | Descriptions                                                 |
 | ---- | ---------------------------- | ------------------------------------------------------------ |
-| 1    | rna (sparse matrix) | A gene-by-cell count matrix from multimodal RNA-seq data. This is a raw count matrix without any normalization. The column names should be the gene names used in the `peak.info` file. Sparse matrix format is required. |
-| 2    | atac (sparse matrix) | A peak-by-cell count matrix from multimodal ATAC-seq data. This is a raw count matrix without any normalization. It can either be binarized or non-binarized (when non-binarized, it can be automatically converted to ). The row names should be the peak names used in the `peak.info` file. The column names are the cell names which should be the same names used in `rna` and the `cell`column of `metafile`. The matrix may not be binarized while it will be binarized within the function. Sparse matrix format is required. |
-| 3    | meta.data (dataframe)     | A meta data frame for cells (rows are cells, and cell names should be in the column named as "cell"; see below example). Additionally, this text should include covariates to use in the model. Examples include: % mitochondrial reads, log(nUMI), sample, and batch as covariates. Dataframe format is required. |
+| 1    | rna (sparse matrix) | A gene-by-cell count matrix from multimodal RNA-seq data. This is a raw count matrix without any normalization. The row names should be the gene names used in the `peak.info` file. The column names are the cell names which should be the same names used in the `cell`column of the dataframe specified for `meta.data`. Sparse matrix format is required. |
+| 2    | atac (sparse matrix) | A peak-by-cell count matrix from multimodal ATAC-seq data. This is a raw count matrix without any normalization. The row names should be the peak names used in the `peak.info` file. The column names are the cell names which should be the same names used in `rna` and the `cell`column of dataframe specified for `meta.data`. The matrix may not be binarized while it will be binarized within the function. Sparse matrix format is required. |
+| 3    | meta.data (dataframe)     | A meta data frame for cells (rows are cells, and **cell names should be in the column named as "cell"**; see below example). Additionally, this text should include covariates to use in the model. Examples include: % mitochondrial reads, log(nUMI), sample, and batch as covariates. Dataframe format is required. |
 | 4    | peak.info (dataframe) | A textfile indicating which gene-peak pairs you want to test in this chunk (see below example). We highly recommend splitting gene-peak pairs into many chunks to increase computational efficiency (See Parallelized Jobs Info in Section 2). Dataframe format or List(Dataframe) format which is a list of multiple data frames for parallelization is required. |
-| 5    | covariates (a vector of character) | A vector of character fields that denote the covariates listed in the meta.data. For example, a set of covariates can be: %mitochondrial reads, log_nUMI, sample, and batch. Additionally the user can specify transformations to the covariates such as log transformation on nUMI counts for direct usage in the SCENT algorithm invoking poisson glm. **We recommend users to at least use log(number of UMI of the total RNA count per cell) as the base model is Poisson regression and we do not include the offset term into the default model.** |
+| 5    | covariates (a vector of character) | A vector of character fields that denote the covariates listed in the meta.data. For example, a set of covariates can be: %mitochondrial reads, log_nUMI, sample, and batch. Additionally the user can specify transformations to the covariates such as log transformation on nUMI counts for direct usage in the SCENT algorithm invoking poisson glm. **We recommend users to at least use log(number_of_total_RNA_UMI_count_per_cell) as the base model is Poisson regression and we do not include the offset term into the default model.** |
 | 6    | celltypes (character)        | User specified naming of the celltype column in the meta.data file. This column should contain the names of the celltypes you want to test in this association analysis. |
 
 Alternatives: The peak.info field can be left blank and created using the CreatePeakToGeneList function in the SCENT package. This function requires the user to specify a bed file that specifies ~500 kb windows of multiple gene loci to identify cis gene-peak pairs to test.
@@ -105,6 +105,7 @@ Alternatives: The peak.info field can be left blank and created using the Create
 The example format of  `peak.info` argument:
 
 ```bash
+> gene_peak <- read.table("/path/to/your_gene_peak_text_file.txt")
 > head(gene_peak)
 
     V1                      V2
@@ -122,26 +123,27 @@ The example format of  `meta.data` argument:
 
 ```r
 meta <- readRDS(metafile)
+meta$`log(nUMI)` <- log(meta$nUMI)
 head(meta)
 
-                                 cell nUMI percent_mito   sample   batch
+                                 cell nUMI percent.mito   sample   batch
 AAACAGCCAAGGAATC-1 AAACAGCCAAGGAATC-1 8380   0.01503428 sample_1 batch_a
 AAACAGCCAATCCCTT-1 AAACAGCCAATCCCTT-1 3771   0.02207505 sample_1 batch_a
 AAACAGCCAATGCGCT-1 AAACAGCCAATGCGCT-1 6876   0.01435579 sample_1 batch_a
 AAACAGCCACACTAAT-1 AAACAGCCACACTAAT-1 1733   0.03881841 sample_1 batch_a
 AAACAGCCACCAACCG-1 AAACAGCCACCAACCG-1 5415   0.01600768 sample_1 batch_a
 AAACAGCCAGGATAAC-1 AAACAGCCAGGATAAC-1 2759   0.02485340 sample_1 batch_a
-                   celltype
-AAACAGCCAAGGAATC-1    Tcell
-AAACAGCCAATCCCTT-1    Tcell
-AAACAGCCAATGCGCT-1    Tcell
-AAACAGCCACACTAAT-1    Tcell
-AAACAGCCACCAACCG-1    Tcell
-AAACAGCCAGGATAAC-1    Tcell
+                   celltype  log(nUMI)
+AAACAGCCAAGGAATC-1    Tcell   9.033603
+AAACAGCCAATCCCTT-1    Tcell   8.235095
+AAACAGCCAATGCGCT-1    Tcell   8.835792
+AAACAGCCACACTAAT-1    Tcell   7.457609
+AAACAGCCACCAACCG-1    Tcell   8.596928
+AAACAGCCAGGATAAC-1    Tcell   7.922624
 ```
 
 
-#### Output of SCENT (SCENT.result field)
+#### Output of SCENT (`SCENT.result` slot)
 
 ```bash
 > head(SCENT_obj@SCENT.result)
@@ -167,7 +169,6 @@ Each column indicates ...
 
 
 ### 2.) Using SCENT with parallelized jobs.
-
 
 `SCENT_parallelization.R` is the example code necessary for running parallelized SCENT jobs.
 This code needs a `SCENT_Object.rds` file that contains a list of gene-peak pairs. 
