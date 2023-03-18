@@ -22,7 +22,7 @@ output_dir  = commandArgs(trailingOnly = T)[5] # Output of each text file to a s
 SCENT_obj <- readRDS(SCENTobj_rds)
 
 #### Get the corresponding dataframe from the list:
-SCENT_obj@peak.info <- SCENT_obj@peak.info[[node]]
+SCENT_obj@peak.info <- SCENT_obj@peak.info.list[[node]]
 
 #### Run SCENT algorithm of Tnk cell type and use 6 cores for parallelization:
 SCENT_obj <- SCENT_algorithm(SCENT_obj, celltype, cores)
