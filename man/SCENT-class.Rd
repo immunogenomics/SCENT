@@ -20,7 +20,9 @@ SCENT Class Constructor
 
 \item{\code{meta.data}}{data.frame. Metadata table with covariates and a cell ID column ("cell")}
 
-\item{\code{peak.info}}{ANY. Gene to Corresponding Peaks Table to Identify Signficance through SCENT: Order Must be (Gene, Peak)}
+\item{\code{peak.info}}{data.frame. Dataframe that contains gene-peak pairs for SCENT to search through}
+
+\item{\code{peak.info.list}}{list. List of dataframes that contain gene-peak pairs to parallelize through}
 
 \item{\code{covariates}}{character. Assign covariates that are needed for the analysis. Must be names that are in the columns of meta.data}
 

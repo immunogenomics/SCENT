@@ -40,6 +40,20 @@ assoc_poisson = function(data, idx = seq_len(nrow(data)), formula){
 }
 
 
+#' Perform negative binomial regression: exprs ~ peak + covariates
+#'
+#' @param data contains expr values and associated peak and covariates for a gene.
+#' @param idx rows of the data to use: argument for boot function (bootstrapping)
+#' @param formula user defined formula based on initialization in CreateSCENTObj Constructor
+#'
+#' @return vector: (coefficient of the peak effect on gene, variance of peak effect on gene)
+#' @export
+assoc_negbin = function(data, idx = seq_len(nrow(data)), formula){
+  gg = glm.nb(formula, data = data[idx,,drop = FALSE])
+  c(coef(gg)['atac'], diag(vcov(gg))['atac'])
+}
+
+
 
 #' Validity and Type Checking for CreateSCENTObject Constructor
 #'
@@ -134,19 +148,25 @@ CreateSCENTObj <- setClass(
 #' SCENT Algorithm: Poisson Regression with Empirical P-values through Bootstrapping.
 #'
 #' @param object SCENT object
-#' @param celltype User specified cell type defined in celltypes column of meta.data
-#' @param ncores Number of cores to use for Parallelization
+#' @param celltype character. User specified cell type defined in celltypes column of meta.data
+#' @param ncores numeric. Number of cores to use for Parallelization
+#' @param regr character. Regression type: "poisson" or "negbin" for Poisson regression and Negative Binomial regression, respectively
+#' @param bin logical. TRUE to binarize ATAC counts. FALSE to NOT binarize ATAC counts
 #'
 #' @return SCENT object with updated field SCENT.results
 #' @export
-SCENT_algorithm <- function(object, celltype, ncores){
+SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TRUE){
   res <- data.frame()
   for (n in 1:nrow(object@peak.info)){ ####c(1:nrow(chunkinfo))
     gene <- object@peak.info[n,1] #GENE is FIRST COLUMN OF PEAK.INFO
     this_peak <- object@peak.info[n,2] #PEAK is SECOND COLUMN OF PEAK.INFO
     atac_target <- data.frame(cell = colnames(object@atac), atac = object@atac[this_peak,])
+
+
     #binarize peaks:
-    atac_target[atac_target$atac>0,]$atac<-1
+    if(bin){
+      atac_target[atac_target$atac>0,]$atac<-1
+    }
 
     mrna_target <- object@rna[gene,]
     df <- data.frame(cell=names(mrna_target),exprs=as.numeric(mrna_target))
@@ -158,32 +178,40 @@ SCENT_algorithm <- function(object, celltype, ncores){
     nonzero_m  <- length( df2$exprs[ df2$exprs > 0] ) / length( df2$exprs )
     nonzero_a  <- length( df2$atac[ df2$atac > 0] ) / length( df2$atac )
     if(nonzero_m > 0.05 & nonzero_a > 0.05){
-      # poisson Regression
+      #Run Regression Once Before Bootstrapping:
       res_var <- "exprs"
       pred_var <- c("atac", object@covariates) ###need to add log....
       formula <- as.formula(paste(res_var, paste(pred_var, collapse = "+"), sep = "~"))
 
+
       #Estimated Coefficients Obtained without Bootstrapping:
-      base = glm(formula, family = 'poisson', data = df2)
-      coefs<-summary(base)$coefficients["atac",]
+      if(regr == "poisson"){
+        base = glm(formula, family = 'poisson', data = df2)
+        coefs<-summary(base)$coefficients["atac",]
+        assoc <- assoc_poisson
+      } else if (regr == "negbin"){
+        base = glm.nb(formula, data = df2)
+        coefs<-summary(base)$coefficients["atac",]
+        assoc <- assoc_negbin
+      }
 
       ###Iterative Bootstrapping Procedure: Estimate the Beta coefficients and associate a 2-sided p-value.
-      bs = boot::boot(df2,assoc_poisson, R = 100, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
+      bs = boot::boot(df2,assoc, R = 100, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
       p0 = basic_p(bs$t0[1], bs$t[,1])
       if(p0<0.1){
-        bs = boot::boot(df2,assoc_poisson, R = 500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+        bs = boot::boot(df2,assoc, R = 500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
         p0 = basic_p(bs$t0[1], bs$t[,1])
       }
       if(p0<0.05){
-        bs = boot::boot(df2,assoc_poisson, R = 2500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+        bs = boot::boot(df2,assoc, R = 2500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
         p0 = basic_p(bs$t0[1], bs$t[,1])
       }
       if(p0<0.01){
-        bs = boot::boot(df2,assoc_poisson, R = 25000, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+        bs = boot::boot(df2,assoc, R = 25000, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
         p0 = basic_p(bs$t0[1], bs$t[,1])
       }
       if(p0<0.001){
-        bs = boot::boot(df2,assoc_poisson, R = 50000, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
+        bs = boot::boot(df2,assoc, R = 50000, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
         p0 = basic_p(bs$t0[1], bs$t[,1])
       }
       out <- data.frame(gene=gene,peak=this_peak,beta=coefs[1],se=coefs[2],z=coefs[3],p=coefs[4],boot_basic_p=p0)
@@ -201,12 +229,12 @@ SCENT_algorithm <- function(object, celltype, ncores){
 #' Creating Cis Gene-Peak Pair Lists to Parallelize Through
 #'
 #' @param object SCENT object
-#' @param genebed File directory for bed file that contains 500 kb windows for each gene
-#' @param nbatch Number of batches to produce: Length of the list
-#' @param tmpfile Location of temporary file.
-#' @param intersectedfile Location of intersected file.
+#' @param genebed character. File directory for bed file that contains 500 kb windows for each gene
+#' @param nbatch numeric. Number of batches to produce: Length of the list
+#' @param tmpfile character. Location of temporary file.
+#' @param intersectedfile character. Location of intersected file.
 #'
-#' @return SCENT object with updated field of peak.info
+#' @return SCENT object with updated field of peak.info.list
 #' @export
 CreatePeakToGeneList <- function(object,genebed="/path/to/GeneBody_500kb_margin.bed",nbatch,tmpfile="./temporary_atac_peak.bed",intersectedfile="./temporary_atac_peak_intersected.bed.gz"){
   peaknames <- rownames(object@atac) # peak by cell matrix
