@@ -123,7 +123,8 @@ check_dimensions <- function(object){
 #' @slot rna dgCMatrix. scRNAseq matrix read as a sparse matrix
 #' @slot atac dgCMatrix. scATACseq matrix read as a sparse matrix
 #' @slot meta.data data.frame. Metadata table with covariates and a cell ID column ("cell")
-#' @slot peak.info ANY. Gene to Corresponding Peaks Table to Identify Signficance through SCENT: Order Must be (Gene, Peak)
+#' @slot peak.info data.frame. Dataframe that contains gene-peak pairs for SCENT to search through
+#' @slot peak.info.list list. List of dataframes that contain gene-peak pairs to parallelize through
 #' @slot covariates character. Assign covariates that are needed for the analysis. Must be names that are in the columns of meta.data
 #' @slot celltypes character. Assign celltype column from meta.data
 #' @slot SCENT.result data.frame. Initialized as empty. Becomes a table of resultant significant gene peak pairs
@@ -136,14 +137,14 @@ CreateSCENTObj <- setClass(
     rna = 'dgCMatrix',
     atac = 'dgCMatrix',
     meta.data = 'data.frame',
-    peak.info = 'ANY',  ###Must be gene (1st column) then peak (2nd column): trying list or dataframe...
-    covariates = 'character',  #Assign columns of covariates, Assign the celltype column.
+    peak.info = 'data.frame',  ###Must be gene (1st column) then peak (2nd column)
+    peak.info.list = 'list',
+    covariates = 'character',
     celltypes = 'character',
     SCENT.result = 'data.frame'
   ),
   validity = check_dimensions
 )
-
 
 #' SCENT Algorithm: Poisson Regression with Empirical P-values through Bootstrapping.
 #'
@@ -258,7 +259,7 @@ CreatePeakToGeneList <- function(object,genebed="/path/to/GeneBody_500kb_margin.
   cis.g2p_list <- lapply(cis.g2p_list, function(x) x[(names(x) %in% c("peak", "gene"))])
   names(cis.g2p_list) <- 1:length(cis.g2p_list)
   # Update the SCENT.peak.info field of the constructor in R:
-  object@peak.info <- cis.g2p_list
+  object@peak.info.list <- cis.g2p_list
   return(object)
 }
 
