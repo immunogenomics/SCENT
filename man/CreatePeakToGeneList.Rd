@@ -15,16 +15,16 @@ CreatePeakToGeneList(
 \arguments{
 \item{object}{SCENT object}
 
-\item{genebed}{File directory for bed file that contains 500 kb windows for each gene}
+\item{genebed}{character. File directory for bed file that contains 500 kb windows for each gene}
 
-\item{nbatch}{Number of batches to produce: Length of the list}
+\item{nbatch}{numeric. Number of batches to produce: Length of the list}
 
-\item{tmpfile}{Location of temporary file.}
+\item{tmpfile}{character. Location of temporary file.}
 
-\item{intersectedfile}{Location of intersected file.}
+\item{intersectedfile}{character. Location of intersected file.}
 }
 \value{
-SCENT object with updated field of peak.info
+SCENT object with updated field of peak.info.list
 }
 \description{
 Creating Cis Gene-Peak Pair Lists to Parallelize Through
