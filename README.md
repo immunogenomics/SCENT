@@ -192,8 +192,8 @@ Arguments in the bash file are user specified as follows:
 |3    | file_SCENT_obj | SCENT object that contains atac_matrix, rna_matrix, metafile, peak_gene_list, etc. To run the SCENT algorithm |
 |4    | celltype       | User specified celltype (ex. "Tcells") to run the SCENT algorithm |
 |5    | regr           | User specified regression type (ex. "poisson") to run SCENT algorithm |
-|6    | bin            | User specified choice to binarize ATAC counts (ex. TRUE) or not |
-|7    | output_dir     | User specified directory to output the SCENT results to aggregate once completed. |
+|6    | bin            | User specified choice to binarize ATAC counts (ex. TRUE) |
+|7    | output_dir     | User specified directory to output the SCENT results to aggregate once completed |
 
 
 ### Contact
