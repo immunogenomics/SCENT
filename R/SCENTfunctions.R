@@ -181,7 +181,7 @@ SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TR
     if(nonzero_m > 0.05 & nonzero_a > 0.05){
       #Run Regression Once Before Bootstrapping:
       res_var <- "exprs"
-      pred_var <- c("atac", object@covariates) ###need to add log....
+      pred_var <- c("atac", object@covariates)
       formula <- as.formula(paste(res_var, paste(pred_var, collapse = "+"), sep = "~"))
 
 
