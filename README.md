@@ -72,10 +72,11 @@ SCENT_obj <- CreateSCENTObj(rna = mrna, atac = atac, meta.data = meta,
 ```
 
 Followed by SCENT algorithm:
+
 ```r
-SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcell", ncores = 6)
+SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcell", ncores = 6, regr = 'poisson', bin = TRUE)
 ```
-Where the user specifies a `celltype` (in this case "Tcell") for association analysis (in `meta.data` slot in SCENT object) and the number of cores for parallelized bootstrapping.
+The user specifies a `celltype` (in this case "Tcell") for association analysis (in `meta.data` slot in SCENT object), the number of cores for parallelized bootstrapping, the regression type (Poisson 'poisson' or Negative Binomial 'negbin' regression), and whether to binarize ATAC counts (TRUE or FALSE).
 
 The output of the SCENT algorithm will be contained in the field:
 ```r
@@ -179,7 +180,7 @@ dependent on the amount of gene-peak pair batches that is user defined (for cont
 SCENT_parallelize.Rmd vignette). The main part of the bash script contains the line:
 
 ```bash
-Rscript SCENT_parallelization.R $LSB_JOBINDEX ${num_cores} ${file_SCENT_obj} ${celltype} ${output_dir}
+Rscript SCENT_parallelization.R $LSB_JOBINDEX ${num_cores} ${file_SCENT_obj} ${celltype} ${regr} ${bin} ${output_dir}
 ```
 
 Arguments in the bash file are user specified as follows:
@@ -189,8 +190,10 @@ Arguments in the bash file are user specified as follows:
 |1    | LSB_JOBINDEX   | jobarray index specified by BSUB -J SCENT[1-100] |
 |2    | num_cores      | number of cores (ex. 6) to parallelize to the SCENT algorithm |
 |3    | file_SCENT_obj | SCENT object that contains atac_matrix, rna_matrix, metafile, peak_gene_list, etc. To run the SCENT algorithm |
-|4    | celltype       |User specified celltype (ex. "Tcells") to run the SCENT algorithm |
-|5    | output_dir     | User specified directory to output the SCENT results to aggregate once completed. |
+|4    | celltype       | User specified celltype (ex. "Tcells") to run the SCENT algorithm |
+|5    | regr           | User specified regression type (ex. "poisson") to run SCENT algorithm |
+|6    | bin            | User specified choice to binarize ATAC counts (ex. TRUE) or not |
+|7    | output_dir     | User specified directory to output the SCENT results to aggregate once completed. |
 
 
 ### Contact
