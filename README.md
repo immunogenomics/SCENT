@@ -76,7 +76,7 @@ Followed by SCENT algorithm:
 ```r
 SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcell", ncores = 6, regr = 'poisson', bin = TRUE)
 ```
-The user specifies a `celltype` (in this case “Tcell”) for association analysis (in meta.data slot in SCENT object), `ncores` for the number of cores for parallelized bootstrapping, `regr` for the regression type (Poisson ‘poisson’ or Negative Binomial ‘negbin’ regression), and `bin` for whether to binarize ATAC counts (TRUE for binarization or FALSE for not).
+The user specifies a `celltype` (in this case “Tcell”) for association analysis (in `meta.data` slot in SCENT object), `ncores` for the number of cores for parallelized bootstrapping, `regr` for the regression type (Poisson ‘poisson’ or Negative Binomial ‘negbin’ regression), and `bin` for whether to binarize ATAC counts (TRUE for binarization or FALSE for not).
 
 The output of the SCENT algorithm will be contained in the field:
 ```r
