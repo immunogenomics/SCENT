@@ -40,6 +40,20 @@ assoc_poisson = function(data, idx = seq_len(nrow(data)), formula){
 }
 
 
+#' Perform Mixed Linear regression: exprs ~ peak + (1|RandomEffect) + FixedEffect_covariates
+#'
+#' @param data contains expr values and associated peak and covariates for a gene.
+#' @param idx rows of the data to use: argument for boot function (bootstrapping)
+#' @param formula user defined formula based on initialization in CreateSCENTObj Constructor
+#'
+#' @return vector: (coefficient of the peak effect on gene, variance of peak effect on gene)
+#' @export
+assoc_lmm = function(data, idx = seq_len(nrow(data)), formula){
+  gg = lme4::lmer(formula, data = data[idx,,drop = FALSE])
+  c( lme4::fixef(gg)['atac'], diag( as.matrix( lme4::vcov.merMod( gg, fixed.only =T ) ) )['atac'] )
+}
+
+
 #' Perform negative binomial regression: exprs ~ peak + covariates
 #'
 #' @param data contains expr values and associated peak and covariates for a gene.
@@ -52,8 +66,6 @@ assoc_negbin = function(data, idx = seq_len(nrow(data)), formula){
   gg = glm.nb(formula, data = data[idx,,drop = FALSE])
   c(coef(gg)['atac'], diag(vcov(gg))['atac'])
 }
-
-
 
 #' Validity and Type Checking for CreateSCENTObject Constructor
 #'
@@ -126,6 +138,7 @@ check_dimensions <- function(object){
 #' @slot peak.info data.frame. Dataframe that contains gene-peak pairs for SCENT to search through
 #' @slot peak.info.list list. List of dataframes that contain gene-peak pairs to parallelize through
 #' @slot covariates character. Assign covariates that are needed for the analysis. Must be names that are in the columns of meta.data
+#' @slot random.effects character. Assign covariates that are to be treated as random effects if using randome effects modeling. if not set to NULL
 #' @slot celltypes character. Assign celltype column from meta.data
 #' @slot SCENT.result data.frame. Initialized as empty. Becomes a table of resultant significant gene peak pairs
 #'
@@ -140,6 +153,7 @@ CreateSCENTObj <- setClass(
     peak.info = 'data.frame',  ###Must be gene (1st column) then peak (2nd column)
     peak.info.list = 'list',
     covariates = 'character',
+    random.effects = 'character',
     celltypes = 'character',
     SCENT.result = 'data.frame'
   ),
@@ -159,10 +173,10 @@ CreateSCENTObj <- setClass(
 SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TRUE){
   res <- data.frame()
   for (n in 1:nrow(object@peak.info)){ ####c(1:nrow(chunkinfo))
-    gene <- object@peak.info[n,1] #GENE is FIRST COLUMN OF PEAK.INFO
-    this_peak <- object@peak.info[n,2] #PEAK is SECOND COLUMN OF PEAK.INFO
+    message( paste0( "Working on ", n, " of ", nrow(object@peak.info), " Potential Interactions."))
+    gene <- as.character( object@peak.info[n,1] ) #GENE is FIRST COLUMN OF PEAK.INFO
+    this_peak <- as.character( object@peak.info[n,2] ) #PEAK is SECOND COLUMN OF PEAK.INFO
     atac_target <- data.frame(cell = colnames(object@atac), atac = object@atac[this_peak,])
-
 
     #binarize peaks:
     if(bin){
@@ -182,9 +196,15 @@ SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TR
       #Run Regression Once Before Bootstrapping:
       res_var <- "exprs"
       pred_var <- c("atac", object@covariates)
-      formula <- as.formula(paste(res_var, paste(pred_var, collapse = "+"), sep = "~"))
-
-
+      if( length( object@random.effects ) == 0 ){
+        formula <- as.formula(paste(res_var, paste(pred_var, collapse = "+"), sep = "~"))  
+      }else{
+        # Build Random Effects Model
+        pred_fixed <- pred_var[ !(pred_var %in% object@random.effects) ]
+        pred_rand <- paste0( '(1|', pred_var[ pred_var %in% object@random.effects ], ')')
+        formula <- as.formula(paste(res_var, paste(c(pred_rand, pred_fixed), collapse = "+"), sep = "~"))
+      }
+      
       #Estimated Coefficients Obtained without Bootstrapping:
       if(regr == "poisson"){
         base = glm(formula, family = 'poisson', data = df2)
@@ -194,8 +214,13 @@ SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TR
         base = glm.nb(formula, data = df2)
         coefs<-summary(base)$coefficients["atac",]
         assoc <- assoc_negbin
+      } else if (regr == "lmm"){
+        base = lme4::lmer(formula, data = df2)
+        coefs <- summary(base)$coefficients["atac",]
+        coefs['Pr(>|z|)'] <- 2 * stats::pt(abs(as.numeric(coefs['t value'])), stats::df.residual(base), lower.tail = FALSE)
+        assoc <- assoc_lmm
       }
-
+      
       ###Iterative Bootstrapping Procedure: Estimate the Beta coefficients and associate a 2-sided p-value.
       bs = boot::boot(df2,assoc, R = 100, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
       p0 = basic_p(bs$t0[1], bs$t[,1])
@@ -211,11 +236,12 @@ SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TR
         bs = boot::boot(df2,assoc, R = 25000, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
         p0 = basic_p(bs$t0[1], bs$t[,1])
       }
-      if(p0<0.001){
-        bs = boot::boot(df2,assoc, R = 50000, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
-        p0 = basic_p(bs$t0[1], bs$t[,1])
-      }
+      #if(p0<0.001){
+      #  bs = boot::boot(df2,assoc, R = 50000, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
+      #  p0 = basic_p(bs$t0[1], bs$t[,1])
+      #}
       out <- data.frame(gene=gene,peak=this_peak,beta=coefs[1],se=coefs[2],z=coefs[3],p=coefs[4],boot_basic_p=p0)
+      message( paste0( n, " Result: ", gene, " ", this_peak, " ", coefs[1], " ", coefs[2], " ", coefs[3], " ", coefs[4], " ", p0))
       res<-rbind(res,out)
     }
   }

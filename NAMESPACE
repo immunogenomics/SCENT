@@ -3,6 +3,7 @@
 export(CreatePeakToGeneList)
 export(CreateSCENTObj)
 export(SCENT_algorithm)
+export(assoc_lmm)
 export(assoc_negbin)
 export(assoc_poisson)
 export(basic_p)

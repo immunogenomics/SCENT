@@ -26,6 +26,8 @@ SCENT Class Constructor
 
 \item{\code{covariates}}{character. Assign covariates that are needed for the analysis. Must be names that are in the columns of meta.data}
 
+\item{\code{random.effects}}{character. Assign covariates that are to be treated as random effects if using randome effects modeling. if not set to NULL}
+
 \item{\code{celltypes}}{character. Assign celltype column from meta.data}
 
 \item{\code{SCENT.result}}{data.frame. Initialized as empty. Becomes a table of resultant significant gene peak pairs}

@@ -15,11 +15,13 @@ Imports:
     R.utils, 
     data.table, 
     lme4, 
+    merDeriv,
     stringr,
     boot, 
     MASS, 
     Matrix, 
-    parallel
+    parallel,
+    stats
 Suggests:
     knitr, 
     rmarkdown
@@ -28,5 +30,5 @@ SystemRequirements:
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 VignetteBuilder: knitr
