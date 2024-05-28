@@ -6,7 +6,7 @@ Single-Cell ENhancer Target gene mapping using multimodal data with ATAC + RNA
 
 (*beta version*)
 
-The manuscript will soon appear at medRxiv! (Sakaue et al. "**Tissue-specific enhancer-gene maps from multimodal single-cell data identify causal disease alleles**")
+The manuscript is now publised in *Nature Genetics*! (Sakaue et al. ["**Tissue-specific enhancer-gene maps from multimodal single-cell data identify causal disease alleles**"](https://www.nature.com/articles/s41588-024-01682-1))
 
 
 
@@ -192,6 +192,11 @@ Arguments in the bash file are user specified as follows:
 |4    | celltype       |User specified celltype (ex. "Tcells") to run the SCENT algorithm |
 |5    | output_dir     | User specified directory to output the SCENT results to aggregate once completed. |
 
+### Enhancer-gene links from the paper
+
+SCENT enhancer-gene linkages (FDR<10%) from the 8 datasets that we described in the paper can be downloaded from the following dropbox link.
+
+https://www.dropbox.com/scl/fo/g20tfnwkcuhib4a6z1wp4/ABYaK5s8bwTLnzrJ0KoZn48?rlkey=j1s5365gso53r2v2dsdynnsr2&st=5np1fq0a&dl=0
 
 ### Contact
 
