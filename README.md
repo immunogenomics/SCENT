@@ -72,10 +72,11 @@ SCENT_obj <- CreateSCENTObj(rna = mrna, atac = atac, meta.data = meta,
 ```
 
 Followed by SCENT algorithm:
+
 ```r
-SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcell", ncores = 6)
+SCENT_obj <- SCENT_algorithm(object = SCENT_obj, celltype = "Tcell", ncores = 6, regr = 'poisson', bin = TRUE)
 ```
-Where the user specifies a `celltype` (in this case "Tcell") for association analysis (in `meta.data` slot in SCENT object) and the number of cores for parallelized bootstrapping.
+The user specifies a `celltype` (in this case “Tcell”) for association analysis (in `meta.data` slot in SCENT object), `ncores` for the number of cores for parallelized bootstrapping, `regr` for the regression type (Poisson ‘poisson’ or Negative Binomial ‘negbin’ regression), and `bin` for whether to binarize ATAC counts (TRUE for binarization or FALSE for not).
 
 The output of the SCENT algorithm will be contained in the field:
 ```r
@@ -93,11 +94,11 @@ Further information on Inputs and Outputs of SCENT are detailed below:
 | 1    | rna (sparse matrix) | A gene-by-cell count matrix from multimodal RNA-seq data. This is a raw count matrix without any normalization. The row names should be the gene names used in the `peak.info` file. The column names are the cell names which should be the same names used in the `cell`column of the dataframe specified for `meta.data`. Sparse matrix format is required. |
 | 2    | atac (sparse matrix) | A peak-by-cell count matrix from multimodal ATAC-seq data. This is a raw count matrix without any normalization. The row names should be the peak names used in the `peak.info` file. The column names are the cell names which should be the same names used in `rna` and the `cell`column of dataframe specified for `meta.data`. The matrix may not be binarized while it will be binarized within the function. Sparse matrix format is required. |
 | 3    | meta.data (dataframe)     | A meta data frame for cells (rows are cells, and **cell names should be in the column named as "cell"**; see below example). Additionally, this text should include covariates to use in the model. Examples include: % mitochondrial reads, log(nUMI), sample, and batch as covariates. Dataframe format is required. |
-| 4    | peak.info (dataframe) | A textfile indicating which gene-peak pairs you want to test in this chunk (see below example). We highly recommend splitting gene-peak pairs into many chunks to increase computational efficiency (See Parallelized Jobs Info in Section 2). List(Dataframe) format which is a list of multiple data frames for parallelization is required. \* |
+| 4    | peak.info (dataframe) | A textfile indicating which gene-peak pairs you want to test in this chunk (see below example) **genes should be in the 1st column and peaks in the 2nd column**. We highly recommend splitting gene-peak pairs into many chunks to increase computational efficiency (See Parallelized Jobs Info in Section 2). List(Dataframe) format which is a list of multiple data frames for parallelization is required. \* |
 | 5    | covariates (a vector of character) | A vector of character fields that denote the covariates listed in the meta.data. For example, a set of covariates can be: %mitochondrial reads, log_nUMI, sample, and batch. Additionally the user can specify transformations to the covariates such as log transformation on nUMI counts for direct usage in the SCENT algorithm invoking poisson glm. **We recommend users to at least use log(number_of_total_RNA_UMI_count_per_cell) as the base model is Poisson regression and we do not include the offset term into the default model.** |
 | 6    | celltypes (character)        | User specified naming of the celltype column in the meta.data file. This column should contain the names of the celltypes you want to test in this association analysis. |
 
-\* Extra Argument: The peak.info.list field can be left blank initially and a created List(Dataframes) can be constructed using the CreatePeakToGeneList function in the SCENT package. This function requires the user to specify a bed file that specifies ~500 kb windows of multiple gene loci to identify cis gene-peak pairs to test. The vignette, SCENT_parallelize.Rmd, will show steps to produce a SCENT object with a peak.info.list field that is used for parallelization in the SCENT_parallelization.R script.
+\* Extra Argument: The peak.info.list field can be left blank initially and a created List(Dataframe) can be constructed using the CreatePeakToGeneList function in the SCENT package. This function requires the user to specify a bed file that specifies ~500 kb windows of multiple gene loci to identify cis gene-peak pairs to test. The vignette, SCENT_parallelize.Rmd, will show steps to produce a SCENT object with a peak.info.list field that is used for parallelization in the SCENT_parallelization.R script.
 
 
 
@@ -179,7 +180,7 @@ dependent on the amount of gene-peak pair batches that is user defined (for cont
 SCENT_parallelize.Rmd vignette). The main part of the bash script contains the line:
 
 ```bash
-Rscript SCENT_parallelization.R $LSB_JOBINDEX ${num_cores} ${file_SCENT_obj} ${celltype} ${output_dir}
+Rscript SCENT_parallelization.R $LSB_JOBINDEX ${num_cores} ${file_SCENT_obj} ${celltype} ${regr} ${bin} ${output_dir}
 ```
 
 Arguments in the bash file are user specified as follows:
@@ -189,8 +190,10 @@ Arguments in the bash file are user specified as follows:
 |1    | LSB_JOBINDEX   | jobarray index specified by BSUB -J SCENT[1-100] |
 |2    | num_cores      | number of cores (ex. 6) to parallelize to the SCENT algorithm |
 |3    | file_SCENT_obj | SCENT object that contains atac_matrix, rna_matrix, metafile, peak_gene_list, etc. To run the SCENT algorithm |
-|4    | celltype       |User specified celltype (ex. "Tcells") to run the SCENT algorithm |
-|5    | output_dir     | User specified directory to output the SCENT results to aggregate once completed. |
+|4    | celltype       | User specified celltype (ex. "Tcells") to run the SCENT algorithm |
+|5    | regr           | User specified regression type (ex. "poisson") to run SCENT algorithm |
+|6    | bin            | User specified choice to binarize ATAC counts (ex. TRUE) |
+|7    | output_dir     | User specified directory to output the SCENT results to aggregate once completed |
 
 ### Enhancer-gene links from the paper
 

@@ -55,9 +55,10 @@ head(SCENT_obj@rna[1:10,1:2])
 head(SCENT_obj@atac[1:10,1:2])
 head(SCENT_obj@meta.data)
 head(SCENT_obj@peak.info)
+str(SCENT_obj)
 ```
 
-## SCENT Algorithm: Poisson Regression w/ Bootstrapping
+## SCENT Algorithm: Obtain small list of gene-peak pairs.
 
 ```{r gene_peak}
 #Of the set of peak gene pairs: pick a set of pairs to test: 
@@ -65,13 +66,34 @@ head(SCENT_obj@peak.info)
 SCENT_obj@peak.info <- SCENT_obj@peak.info[1:10,]
 head(SCENT_obj@peak.info)
 ```
+## SCENT Algorithm: Options for Regression w/ Bootstrapping.
+
+```{r gene_peak}
+#Run SCENT algorithm of Tnk cell type and use 6 cores for parallelization:
+
+
+#Default: Poisson regression and Binarized ATAC counts
+SCENT_obj_ver1 <- SCENT_algorithm(SCENT_obj, "Tnk", 6) 
+# By default settings the above will perform parallelizations using Poisson regression and Binarized counts.
+
+#Option 1: Poisson regression and Non-Binarized ATAC counts
+SCENT_obj_ver2 <- SCENT_algorithm(SCENT_obj, "Tnk", 6, regr = "poisson", bin = FALSE)
+
+#Option 2: Negative Binomial regression and Binarized ATAC counts
+SCENT_obj_ver3 <- SCENT_algorithm(SCENT_obj, "Tnk", 6, regr = "negbin", bin = TRUE)
+
+#Option 3: Negative Binomial regression and Non-Binarized ATAC counts
+SCENT_obj_ver4 <- SCENT_algorithm(SCENT_obj, "Tnk", 6, regr = "negbin", bin = FALSE)
+
+```
 
 ## Output of SCENT Algorithm
 
 ```{r SCENT_algo}
-#Run SCENT algorithm of Tnk cell type and use 6 cores for parallelization:
-SCENT_obj <- SCENT_algorithm(SCENT_obj, "Tnk", 6)
-head(SCENT_obj@SCENT.result)
+head(SCENT_obj_ver1@SCENT.result)
+head(SCENT_obj_ver2@SCENT.result)
+head(SCENT_obj_ver3@SCENT.result)
+head(SCENT_obj_ver4@SCENT.result)
 ```
 
 ```

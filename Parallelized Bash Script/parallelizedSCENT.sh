@@ -9,4 +9,5 @@
 
 
 module load R
-Rscript SCENT_parallelization.R $LSB_JOBINDEX ${num_cores} ${file_SCENT_obj} ${celltype} ${output_dir}
+Rscript SCENT_parallelization.R $LSB_JOBINDEX ${num_cores} ${file_SCENT_obj} ${celltype} ${regr} ${bin} ${output_dir}
+
