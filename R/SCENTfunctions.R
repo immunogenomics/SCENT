@@ -252,6 +252,8 @@ CreatePeakToGeneList <- function(object,genebed="/path/to/GeneBody_500kb_margin.
   #Obtain gene to peak pairs.
   cis.g2p <- d[c("V4","V8")]
   colnames(cis.g2p) <- c("gene","peak")
+  genes_in_rna <- rownames(object@rna) # gene by cell matrix
+  cis.g2p <- cis.g2p[cis.g2p$gene %in% genes_in_rna,] # make sure g2p genes are all included in rna matrix
 
   cis.g2p$index <- 1:nrow(cis.g2p)
   cis.g2p$batch_index <- cut2(cis.g2p$index, g = nbatch, levels.mean = TRUE)
