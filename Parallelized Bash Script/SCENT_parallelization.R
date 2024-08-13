@@ -3,8 +3,8 @@ library(SCENT)
 
 ####### INPUTS
 #Obtain arguments: (from Cluster)
-node = commandArgs(trailingOnly = T)[1] # JOB ARRAY number: node usage
-cores = commandArgs(trailingOnly = T)[2] # numeric. Number of Cores
+node = as.numeric(commandArgs(trailingOnly = T)[1]) # JOB ARRAY number: node usage
+cores = as.numeric(commandArgs(trailingOnly = T)[2]) # numeric. Number of Cores
 SCENTobj_rds = commandArgs(trailingOnly = T)[3] # RDS object file type
 celltype = commandArgs(trailingOnly = T)[4] # character. CellType
 regr = commandArgs(trailingOnly = T)[5] # character. Regression Type
