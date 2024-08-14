@@ -20,9 +20,8 @@ SCENT uses single-cell multimodal data (e.g., 10X Multiome RNA/ATAC) and links A
 
 We use Poisson regression to associate gene expression (raw) count and (binarized) peak accessibility, and estimate errors in coefficients by bootstrapping framework to control for type I error.
 
-## 
 
-### Versions
+### Release notes
 
 - **v1.0.1**: Aug 2024, bug fix in parallelization scripts in [Parallelized Bash Script](https://github.com/immunogenomics/SCENT/tree/main/Parallelized Bash Script)
 - **v1.0.0**: Jan 2024, first official release
