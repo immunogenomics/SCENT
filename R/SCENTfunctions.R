@@ -166,7 +166,9 @@ SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TR
 
     #binarize peaks:
     if(bin){
-      atac_target[atac_target$atac>0,]$atac<-1
+      if(nrow(atac_target[atac_target$atac>0,])>0){
+        atac_target[atac_target$atac>0,]$atac<-1
+      }
     }
 
     mrna_target <- object@rna[gene,]
