@@ -6,8 +6,6 @@ Single-Cell ENhancer Target gene mapping using multimodal data with ATAC + RNA
 
 The manuscript is now publised in *Nature Genetics*! (Sakaue et al. ["**Tissue-specific enhancer-gene maps from multimodal single-cell data identify causal disease alleles**"](https://www.nature.com/articles/s41588-024-01682-1))
 
-[TOC]
-
 
 
 ### Overview
