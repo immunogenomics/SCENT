@@ -3,14 +3,13 @@ library(SCENT)
 
 ####### INPUTS
 #Obtain arguments: (from Cluster)
-node = as.numeric(commandArgs(trailingOnly = T)[1]) # JOB ARRAY number: node usage
-cores = as.numeric(commandArgs(trailingOnly = T)[2]) # numeric. Number of Cores
-SCENTobj_rds = commandArgs(trailingOnly = T)[3] # RDS object file type
+node = as.integer(commandArgs(trailingOnly = T)[1]) # integer. JOB ARRAY number: node usage
+cores = as.integer(commandArgs(trailingOnly = T)[2]) # integer. Number of Cores
+SCENTobj_rds = commandArgs(trailingOnly = T)[3] # character. RDS object file type
 celltype = commandArgs(trailingOnly = T)[4] # character. CellType
 regr = commandArgs(trailingOnly = T)[5] # character. Regression Type
-bin = commandArgs(trailingOnly = T)[6] # logical. Binarize ATAC counts
-output_dir  = commandArgs(trailingOnly = T)[7] # Output of each text file to a specific folder
-
+bin = as.logical(commandArgs(trailingOnly = T)[6]) # logical. Binarize ATAC counts
+output_dir  = commandArgs(trailingOnly = T)[7] # character. Output of each text file to a specific folder
 
 ###Example of inputs from the bash script: parallelizedSCENT.sh
 # node <- 1
