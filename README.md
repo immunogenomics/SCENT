@@ -23,7 +23,7 @@ We use Poisson regression to associate gene expression (raw) count and (binarize
 
 ### Release notes
 
-- **v1.0.1**: Aug 2024, bug fix in parallelization scripts in [Parallelized Bash Script](https://github.com/immunogenomics/SCENT/tree/main/Parallelized Bash Script)
+- **v1.0.1**: Aug 2024, bug fix in parallelization scripts in `Parallelized Bash Script` folder
 - **v1.0.0**: Jan 2024, first official release
 
 ### Installation of SCENT Package
