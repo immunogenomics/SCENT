@@ -1,7 +1,7 @@
 Package: SCENT
 Type: Package
 Title: Single-Cell ENhancer Target (SCENT) gene mapping for single cell multimodal data 
-Version: 1.0.0
+Version: 1.0.1
 Author: Saori Sakaue and Shakson Isaac
 Maintainer: Shakson Isaac <shakson_isaac@g.harvard.edu>
 Description: R package that contains functions for the SCENT algorithm. SCENT uses 
