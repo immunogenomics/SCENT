@@ -29,6 +29,6 @@ SCENT_obj@peak.info <- SCENT_obj@peak.info.list[[node]]
 SCENT_obj <- SCENT_algorithm(SCENT_obj, celltype, cores, regr, bin)
 
 #### Output SCENT results for each gene-peak pair block.
-filename <- paste0(output_dir,"SCENTresult_",node,".txt")
+filename <- paste0(output_dir,"/SCENTresult_",node,".txt")
 
-write.table(SCENT_obj@SCENT.result, file = filename, row.names = F, col.names = T)
+write.table(SCENT_obj@SCENT.result, file = filename, row.names = F, col.names = T, quote = F)
