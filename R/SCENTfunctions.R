@@ -153,10 +153,11 @@ CreateSCENTObj <- setClass(
 #' @param ncores numeric. Number of cores to use for Parallelization
 #' @param regr character. Regression type: "poisson" or "negbin" for Poisson regression and Negative Binomial regression, respectively
 #' @param bin logical. TRUE to binarize ATAC counts. FALSE to NOT binarize ATAC counts
-#'
+#' @param boot logical. TRUE to perform bootstrapping to derive boot P values (default). FALSE to NOT bootstrap but only derive analytical p values. 
+#' @param maxboot numeric. Number of bootstrapping procedures at maximum in adaptive bootstrapping depending on the significance of boot P values. Default: 50000
 #' @return SCENT object with updated field SCENT.results
 #' @export
-SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TRUE){
+SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TRUE, boot = TRUE, maxboot = 50000){
   res <- data.frame()
   for (n in 1:nrow(object@peak.info)){ ####c(1:nrow(chunkinfo))
     gene <- object@peak.info[n,1] #GENE is FIRST COLUMN OF PEAK.INFO
@@ -197,28 +198,61 @@ SCENT_algorithm <- function(object, celltype, ncores, regr = "poisson", bin = TR
         coefs<-summary(base)$coefficients["atac",]
         assoc <- assoc_negbin
       }
-
-      ###Iterative Bootstrapping Procedure: Estimate the Beta coefficients and associate a 2-sided p-value.
-      bs = boot::boot(df2,assoc, R = 100, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
-      p0 = basic_p(bs$t0[1], bs$t[,1])
-      if(p0<0.1){
-        bs = boot::boot(df2,assoc, R = 500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
-        p0 = basic_p(bs$t0[1], bs$t[,1])
-      }
-      if(p0<0.05){
-        bs = boot::boot(df2,assoc, R = 2500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
-        p0 = basic_p(bs$t0[1], bs$t[,1])
-      }
-      if(p0<0.01){
-        bs = boot::boot(df2,assoc, R = 25000, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
-        p0 = basic_p(bs$t0[1], bs$t[,1])
-      }
-      if(p0<0.001){
-        bs = boot::boot(df2,assoc, R = 50000, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
-        p0 = basic_p(bs$t0[1], bs$t[,1])
-      }
-      out <- data.frame(gene=gene,peak=this_peak,beta=coefs[1],se=coefs[2],z=coefs[3],p=coefs[4],boot_basic_p=p0)
-      res<-rbind(res,out)
+      
+      if(boot){
+        if(maxboot == 50000){
+        ###Iterative Bootstrapping Procedure: Estimate the Beta coefficients and associate a 2-sided p-value.
+          bs = boot::boot(df2,assoc, R = 100, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
+          p0 = basic_p(bs$t0[1], bs$t[,1])
+          if(p0<0.1){
+            bs = boot::boot(df2,assoc, R = 500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          if(p0<0.05){
+            bs = boot::boot(df2,assoc, R = 2500, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          if(p0<0.01){
+            bs = boot::boot(df2,assoc, R = 25000, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          if(p0<0.001){
+            bs = boot::boot(df2,assoc, R = 50000, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          out <- data.frame(gene=gene,peak=this_peak,beta=coefs[1],se=coefs[2],z=coefs[3],p=coefs[4],boot_basic_p=p0)
+          res<-rbind(res,out)
+        }else{
+        ###Iterative Bootstrapping Procedure with user-specified number of  boostrapping
+          bs = boot::boot(df2,assoc, R = 100, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
+          p0 = basic_p(bs$t0[1], bs$t[,1])
+          if(p0<0.1){
+            if(maxboot > 500){boot_n = 500}else{boot_n = maxboot}
+            bs = boot::boot(df2,assoc, R = boot_n, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          if(p0<0.05 & maxboot > 500){
+            if(maxboot > 2500){boot_n = 2500}else{boot_n = maxboot}
+            bs = boot::boot(df2,assoc, R = boot_n, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          if(p0<0.01 & maxboot > 2500){
+            if(maxboot > 25000){boot_n = 25000}else{boot_n = maxboot}
+            bs = boot::boot(df2,assoc, R = boot_n, formula = formula,  stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          if(p0<0.001 & maxboot > 25000){
+            boot_n = maxboot
+            bs = boot::boot(df2,assoc, R = boot_n, formula = formula, stype = 'i', parallel = "multicore", ncpus = ncores)
+            p0 = basic_p(bs$t0[1], bs$t[,1])
+          }
+          out <- data.frame(gene=gene,peak=this_peak,beta=coefs[1],se=coefs[2],z=coefs[3],p=coefs[4],boot_basic_p=p0)
+          res<-rbind(res,out) 
+          }
+        }else{
+        out <- data.frame(gene=gene,peak=this_peak,beta=coefs[1],se=coefs[2],z=coefs[3],p=coefs[4],boot_basic_p=NA)
+        res<-rbind(res,out)
+      }  
     }
   }
 
